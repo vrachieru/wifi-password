@@ -20,7 +20,7 @@ getNetworks() {
     if [ "$OS_NAME" == "linux" ]; then
         ls /etc/NetworkManager/system-connections
     elif [ "$OS_NAME" == "windows" ]; then
-        printf "`netsh wlan show profiles | sed -n 's/\(.*Profile.*\) : \(.*\)/\2/p'`"
+        netsh wlan show profiles | sed -n 's/\(.*Profile.*\) : \(.*\)/\2/p'
     fi
 }
 
@@ -28,7 +28,7 @@ getPassword() {
     if [ "$OS_NAME" == "linux" ]; then
         sudo cat /etc/NetworkManager/system-connections/"$1" | sed -n 's/psk=\(.*\)/\1/p'
     elif [ "$OS_NAME" == "windows" ]; then
-        printf "`netsh wlan show profiles name="$1" key=clear | sed -n 's/\(.*Key Content.*\) : \(.*\)/\2/p'`"
+        netsh wlan show profiles name="$1" key=clear | sed -n 's/\(.*Key Content.*\) : \(.*\)/\2/p'
     fi
 }
 
