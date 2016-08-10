@@ -2,33 +2,38 @@
 
 IFS=$'\n'
 
-getPlatform() {
-    case "$(uname -s)" in
+getOS() {
+    case "`uname -s`" in
         Darwin)
-            PLATFORM='osx';;
+            OS_NAME='osx';;
         Linux)
-            PLATFROM='linux';;
+            OS_NAME='linux';;
         CYGWIN*|MINGW*|MSYS*)
-            PLATFORM='windows';;
+            OS_NAME='windows';;
         *)
-            PLATFORM='unknown';;
+            OS_NAME='unknown';;
     esac
+
 }
 
 getNetworks() {
-    if [ "$PLATFORM" == "windows" ]; then
+    if [ "$OS_NAME" == "linux" ]; then
+        ls /etc/NetworkManager/system-connections
+    elif [ "$OS_NAME" == "windows" ]; then
         printf "`netsh wlan show profiles | sed -n 's/\(.*Profile.*\) : \(.*\)/\2/p'`"
     fi
 }
 
 getPassword() {
-    if [ "$PLATFORM" == "windows" ]; then
+    if [ "$OS_NAME" == "linux" ]; then
+        sudo cat /etc/NetworkManager/system-connections/"$1" | sed -n 's/psk=\(.*\)/\1/p'
+    elif [ "$OS_NAME" == "windows" ]; then
         printf "`netsh wlan show profiles name="$1" key=clear | sed -n 's/\(.*Key Content.*\) : \(.*\)/\2/p'`"
     fi
 }
 
 main() {
-    getPlatform
+    getOS
 
     if [ $# -eq 0 ]; then
         networks=`getNetworks`
@@ -37,9 +42,9 @@ main() {
              printf "%-${maxNetworkLen}s : %s\n" "$n" "`getPassword $n`"
          done
     elif [ $# -eq 1 ]; then
-        getPassword "$1"
+        printf "%s\n" "`getPassword "$1"`"
     else
-        printf "Usage: wifi-password [ssid]"
+        printf "Usage: wifi-password [ssid]\n"
     fi
 }
 
